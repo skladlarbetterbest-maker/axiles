@@ -1,51 +1,59 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
-from paddleocr import PaddleOCR
-import uvicorn
-import os
+from flask import Flask, request, jsonify
+import requests
+import io
+import base64
 
-app = FastAPI()
+app = Flask(__name__)
 
-ocr = PaddleOCR(use_angle_cls=True, lang='uz', show_log=False)
+OCR_API_KEY = "helloworld"
 
-@app.get("/")
+@app.route("/")
 def home():
-    return {"message": "PaddleOCR API ishga tushdi!", "status": "ok"}
+    return jsonify({"message": "OCR API ishga tushdi!", "status": "ok"})
 
-@app.post("/ocr")
-async def ocr_image(file: UploadFile = File(...)):
-    contents = await file.read()
-    
-    temp_path = "temp_image.jpg"
-    with open(temp_path, "wb") as f:
-        f.write(contents)
-    
+@app.route("/ocr", methods=["POST"])
+def ocr_image():
     try:
-        result = ocr.ocr(temp_path, cls=True)
-        
+        if "file" in request.files:
+            file = request.files["file"]
+            files = {"file": (file.filename, file.stream, file.content_type)}
+            data = {"language": "uzb"}
+        elif "image_base64" in request.json:
+            image_data = request.json["image_base64"]
+            if "," in image_data:
+                image_data = image_data.split(",")[1]
+            files = {"file": ("image.png", base64.b64decode(image_data), "image/png")}
+            data = {"language": "uzb"}
+        else:
+            return jsonify({"success": False, "error": "File yoki image_base64 yuboring"}), 400
+
+        response = requests.post(
+            "https://api.ocr.space/parse/image",
+            files=files,
+            data=data,
+            headers={"apikey": OCR_API_KEY}
+        )
+
+        result = response.json()
+
+        if result.get("IsErroredOnProcessing"):
+            return jsonify({"success": False, "error": result.get("ErrorMessage", ["Unknown error"])}), 500
+
+        parsed_results = result.get("ParsedResults", [])
         texts = []
-        if result and result[0]:
-            for line in result[0]:
-                texts.append({
-                    "text": line[1][0],
-                    "confidence": float(line[1][1])
-                })
-        
-        os.remove(temp_path)
-        
-        return JSONResponse({
+        for item in parsed_results:
+            text = item.get("ParsedResults", [{}])[0].get("ParsedText", "")
+            conf = item.get("TextOverlay", {}).get("MeanConfidence", 0)
+            texts.append({"text": text, "confidence": conf/100})
+
+        return jsonify({
             "success": True,
             "count": len(texts),
             "results": texts
         })
-        
+
     except Exception as e:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-        return JSONResponse({
-            "success": False,
-            "error": str(e)
-        }, status_code=500)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000)
