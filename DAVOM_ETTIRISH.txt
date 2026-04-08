@@ -1,0 +1,36 @@
+# OCR API loyihasini davom ettirish
+
+## Joriy holat:
+
+**Loyiha papkasi:** `C:\Learn\Learn\code\opencode2\PaddleOCR-main`
+
+**API fayli:** `C:\Learn\Learn\code\opencode2\PaddleOCR-main\api.py`
+
+**GitHub:** https://github.com/skladlarbetterbest-maker/axiles.git
+
+---
+
+## Davom ettirish uchun qadamlar:
+
+### 1. API ni ishga tushirish (localhost)
+```bash
+cd C:\Learn\Learn\code\opencode2\PaddleOCR-main
+python api.py
+```
+So'ngra brauzerda `http://127.0.0.1:8000/` ochish
+
+### 2. GitHubga yangilash
+```bash
+cd C:\Learn\Learn\code\opencode2\PaddleOCR-main
+git add api.py
+git commit -m "Update API"
+git push origin main
+```
+
+### 3. Serverga qo'yish (Render.com)
+- render.com > New > Web Service
+- Build: `pip install flask easyocr`
+- Start: `python api.py`
+
+### 4. Google Apps Script ulash
+- Serverdan olingan URL ni Apps Script da ishlatish
