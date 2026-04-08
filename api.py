@@ -30,25 +30,25 @@ HTML_PAGE = """
 </head>
 <body>
     <div class="container">
-        <h1>📷 OCR API (EasyOCR)</h1>
+        <h1>OCR API (EasyOCR)</h1>
         
         <div class="upload-box">
             <input type="file" id="fileInput" accept="image/*" onchange="previewFile()">
-            <label for="fileInput" class="upload-btn">🖼 Rasm tanlash</label>
+            <label for="fileInput" class="upload-btn">Rasm tanlash</label>
             <p id="fileName"></p>
             <img id="preview" class="preview">
         </div>
         
         <select id="language">
             <option value="en">English</option>
-            <option value="ru">Russian (Русский)</option>
+            <option value="ru">Russian</option>
             <option value="en,ru">English + Russian</option>
         </select>
         
         <div class="status" id="status"></div>
         
         <div class="result" id="result">
-            <h3>✅ Natija:</h3>
+            <h3>Natija:</h3>
             <pre id="resultText"></pre>
         </div>
         
@@ -74,7 +74,7 @@ HTML_PAGE = """
             const file = document.getElementById('fileInput').files[0];
             if (!file) return;
             
-            document.getElementById('status').textContent = '⏳ Ishlanyapti... (birinchi marta kutyapsiz)';
+            document.getElementById('status').textContent = 'Ishlanmoqda...';
             document.getElementById('result').style.display = 'none';
             document.getElementById('error').style.display = 'none';
             
@@ -124,7 +124,7 @@ def home():
 def ocr_image():
     try:
         if "file" not in request.files:
-            return jsonify({"success": False, "error": "No file sent"}), 400
+            return jsonify({"success": False, "error": "File yuborilmadi"}), 400
             
         file = request.files["file"]
         language = request.form.get("language", "en")
